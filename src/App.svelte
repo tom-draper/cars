@@ -1,10 +1,10 @@
 <script lang="ts">
-    import Car from "./lib/Car.svelte";
+    import Canvas from "./lib/Canvas.svelte";
 </script>
 
 <main>
     <div>
-        <Car />
+        <Canvas />
     </div>
 </main>
 
