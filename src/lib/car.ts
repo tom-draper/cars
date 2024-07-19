@@ -19,12 +19,16 @@ export class Car {
         this.#performance = performance;
     }
 
+    get velocity() {
+        return this.#velocity;
+    }
+
     attach(element: HTMLDivElement) {
         if (element instanceof HTMLDivElement) {
             this.#element = element;
         }
     }
-    
+
     accelerate(amount: number) {
         const increment = amount * this.#performance.acceleration * Car.#distanceUnit;
         this.#velocity += increment;
@@ -54,7 +58,7 @@ export class Car {
         this.#position = this.#sumVectors(this.#position, movement);
         this.#updateCarElement();
     }
-    
+
     #updateCarElement() {
         if (this.#element) {
             // Apply the rotation and translation

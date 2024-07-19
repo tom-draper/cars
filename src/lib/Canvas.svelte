@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { Driver } from "./driver";
-    
+
     let canvas: HTMLDivElement;
     const drivers: Driver[] = [];
     let driverCount = 0;
@@ -11,7 +11,7 @@
             drivers.push(driver);
         }
     });
-    
+
     function newDriver() {
         const driver = new Driver();
 

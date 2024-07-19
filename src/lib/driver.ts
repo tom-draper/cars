@@ -4,17 +4,25 @@ export class Driver {
     #ability: DriverAbility;
     #state: DriverState;
 
-    car: Car = new Car();
-    #history: DriverHistory = new DriverHistory();
+    #car: Car = new Car();
+    #history: ActionHistory = new ActionHistory();
 
     constructor() {
         this.#ability = DriverAbility.default();
         this.#state = DriverState.default();
     }
 
+    get car() {
+        return this.#car;
+    }
+
     nextMove() {
-        // Combine driver ability and state with history (and road layout in 
-        // future) to calculate next move
+        // Decide next move based on: 
+        // - Current velocity
+        // - Road layout
+        // - Action history
+        // - Ability
+        // - State
         this.randomSteer();
         this.randomAccelerate();
         this.car.update();
@@ -28,27 +36,26 @@ export class Driver {
     }
 
     randomAccelerate() {
-        const p = Math.random();
-        if (p > 0.8) {
+        if (this.car.velocity > 1) {
+            this.car.brake(0.3);
+        } else {
             this.car.accelerate(1);
-        } else if (p < 0.01) {
-            this.car.brake(1);
         }
     }
 
     accelerate(amount: number) {
         this.car.accelerate(amount);
-        this.#history.add(DriverHistoryType.Acceleration, amount);
+        this.#history.add(ActionType.Acceleration, amount);
     }
 
     brake(amount: number) {
         this.car.brake(amount);
-        this.#history.add(DriverHistoryType.Acceleration, -amount);
+        this.#history.add(ActionType.Acceleration, -amount);
     }
 
     steer(amount: number) {
         this.car.steer(amount);
-        this.#history.add(DriverHistoryType.Steering, amount);
+        this.#history.add(ActionType.Steering, amount);
     }
 
     static default() {
@@ -73,7 +80,7 @@ export class DriverAbility {
 export class DriverState {
     #intoxication: number;
     #tiredness: number;
-    #eyesight: number
+    #eyesight: number;
 
     constructor(intoxication: number, tiredness: number, eyesight: number) {
         this.#intoxication = intoxication;
@@ -86,18 +93,18 @@ export class DriverState {
     }
 }
 
-enum DriverHistoryType{
+enum ActionType {
     Acceleration,
     Steering
 }
 
-type DriverHistoryEpoch = {
-    type: DriverHistoryType;
-    value: number
+type ActionHistoryEpoch = {
+    type: ActionType;
+    value: number;
 }
 
-class DriverHistory {
-    #history: DriverHistoryEpoch[];
+class ActionHistory {
+    #history: ActionHistoryEpoch[];
     #index: number = 0;
 
     constructor(size: number = 50) {
@@ -108,7 +115,7 @@ class DriverHistory {
         this.#history = new Array(size);
     }
 
-    add(type: DriverHistoryType, value: number) {
+    add(type: ActionType, value: number) {
         this.#history[this.#index] = { type, value };
         this.#increment();
     }
