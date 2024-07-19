@@ -1,4 +1,3 @@
-import { Driver } from "./driver";
 
 type Vector = {
     x: number;
@@ -10,15 +9,14 @@ export class Car {
     #direction = 0;
     #position: Vector = { x: 0, y: 0 };
     #performance: CarPerformance;
-    #driver: Driver;
     #element: HTMLDivElement | null = null;
 
-    static #distanceUnit = 0.1;
+    static #distanceUnit = 1;
     static #steerUnit = 0.1;
+    static #drag = 0.1;
 
-    constructor(performance: CarPerformance = CarPerformance.default(), driver: Driver = Driver.default()) {
+    constructor(performance: CarPerformance = CarPerformance.default()) {
         this.#performance = performance;
-        this.#driver = driver;
     }
 
     attach(element: HTMLDivElement) {
@@ -27,34 +25,41 @@ export class Car {
         }
     }
     
-    accelerate() {
-        this.#velocity += this.#performance.acceleration * Car.#distanceUnit;
+    accelerate(amount: number) {
+        const increment = amount * this.#performance.acceleration * Car.#distanceUnit;
+        this.#velocity += increment;
     }
 
-    brake() {
-        this.#velocity -= this.#performance.braking * Car.#distanceUnit;
-        this.#velocity = Math.max(0, this.#velocity);
+    brake(amount: number) {
+        if (this.#velocity <= 0) {
+            return;
+        }
+
+        // Limit the maximum decrement to avoid velocity below 0
+        const decrement = Math.min(amount * this.#performance.braking * Car.#distanceUnit, this.#velocity);
+        this.#velocity -= decrement;
     }
 
-    steer(radians: number) {
-        this.#direction += radians * Car.#steerUnit;
+    steer(amount: number) {
+        const change = amount * Car.#steerUnit;
+        this.#direction += change;
+    }
+
+    update() {
+        // Apply drag to slow down the car
+        this.#velocity -= Math.min(Car.#drag, this.#velocity);
+
+        // Calculate new position based on current velocity and direction
+        const movement = this.#translationVector();
+        this.#position = this.#sumVectors(this.#position, movement);
+        this.#updateCarElement();
+    }
+    
+    #updateCarElement() {
         if (this.#element) {
+            // Apply the rotation and translation
             this.#element.style.transform = Car.#translationStyle(this.#direction, this.#position);
         }
-    }
-
-    move() {
-        if (!this.#element) {
-            return
-        }
-
-        // Calculate the translation vector
-        const movement = this.#translationVector();
-        const position = this.#sumVectors(this.#position, movement);
-        this.#position = position;
-
-        // Apply the rotation and translation
-        this.#element.style.transform = Car.#translationStyle(this.#direction, position);
     }
 
     static #translationStyle(direction: number, position: Vector) {
@@ -99,4 +104,3 @@ export class CarPerformance {
         return new CarPerformance(0.5, 0.5, 0.5);
     }
 }
-

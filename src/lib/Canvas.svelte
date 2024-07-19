@@ -1,57 +1,42 @@
 <script lang="ts">
     import { onMount } from "svelte";
-    import { Car } from "./car";
-
-    function createCar() {
-        const car = new Car();
+    import { Driver } from "./driver";
+    
+    let canvas: HTMLDivElement;
+    const drivers: Driver[] = [];
+    let driverCount = 0;
+    onMount(() => {
+        for (let i = 0; i < 10; i++) {
+            const driver = newDriver();
+            drivers.push(driver);
+        }
+    });
+    
+    function newDriver() {
+        const driver = new Driver();
 
         const element = document.createElement("div");
-        element.id = `car-${carCount++}`;
+        element.id = `car-${driverCount++}`;
         element.classList.add("car");
 
-        car.attach(element);
+        driver.car.attach(element);
         canvas.appendChild(element);
 
         setInterval(() => {
-            moveCar(car);
+            driver.nextMove();
         }, 1);
-        return new Car();
-    }
-
-    let canvas: HTMLDivElement;
-    let cars: Car[] = [];
-    let carCount = 0;
-    onMount(() => {
-        for (let i = 0; i < 500; i++) {
-            const car = createCar();
-            cars.push(car);
-        }
-    });
-
-    function randomSteer(car: Car) {
-        const p = Math.random();
-        if (p > 0.3) {
-            car.steer(Math.random() - 0.5);
-        }
-    }
-
-    function randomAccelerate(car: Car) {
-        const p = Math.random();
-        if (p > 0.8) {
-            car.accelerate();
-        } else if (p < 0.2) {
-            car.brake();
-        }
-    }
-
-    function moveCar(car: Car) {
-        randomSteer(car);
-        randomAccelerate(car);
-        car.move();
+        return driver;
     }
 </script>
 
 <div id="canvas" bind:this={canvas}></div>
 
 <style>
+    :global(.car) {
+        position: absolute;
+        width: 15px;
+        height: 10px;
+        background-color: red;
+        border-radius: 3px;
+    }
 </style>
