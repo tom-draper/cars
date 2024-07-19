@@ -1,11 +1,10 @@
 import { Car } from "./car";
 
 export class Driver {
-    #ability: DriverAbility;
-    #state: DriverState;
-
     #car: Car = new Car();
     #history: ActionHistory = new ActionHistory();
+    #ability: DriverAbility;
+    #state: DriverState;
 
     constructor() {
         this.#ability = DriverAbility.default();
