@@ -29,16 +29,18 @@ export class Driver {
 
     randomSteer() {
         const p = Math.random();
-        if (p > 0.3) {
-            this.car.steer(Math.random() - 0.5);
+        if (p > .3) {
+            const amount = Math.random() - 0.5 - 0.5;
+            console.log(amount);
+            this.car.steer(amount * .1);
         }
     }
 
     randomAccelerate() {
         if (this.car.velocity > 1) {
-            this.car.brake(0.3);
+            this.car.brake(.3);
         } else {
-            this.car.accelerate(1);
+            this.car.accelerate(.5);
         }
     }
 

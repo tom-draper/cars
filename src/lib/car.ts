@@ -12,7 +12,7 @@ export class Car {
     #element: HTMLDivElement | null = null;
 
     static #distanceUnit = 1;
-    static #steerUnit = 0.1;
+    static #steerUnit = 1;
     static #drag = 0.1;
 
     constructor(performance: CarPerformance = CarPerformance.default()) {
@@ -83,8 +83,8 @@ export class Car {
 
 export class CarPerformance {
     #acceleration: number;
-    #braking: number;
     #speed: number;
+    #braking: number;
 
     constructor(braking: number, acceleration: number, speed: number) {
         this.#acceleration = acceleration;

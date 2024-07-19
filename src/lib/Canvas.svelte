@@ -7,16 +7,31 @@
     let driverCount = 0;
     onMount(() => {
         for (let i = 0; i < 10; i++) {
-            const driver = newDriver();
+            const driver = createDriver();
             drivers.push(driver);
         }
     });
 
-    function newDriver() {
+    
+    const getCarColour = (() => {
+        const colours = [
+            'red',
+            'blue',
+            'green',
+            'yellow',
+            'purple',
+        ]
+        return () => {
+            return colours[Math.floor(Math.random() * colours.length)];
+        }
+    })()
+
+    function createDriver() {
         const driver = new Driver();
 
         const element = document.createElement("div");
         element.id = `car-${driverCount++}`;
+        element.style.background = getCarColour();
         element.classList.add("car");
 
         driver.car.attach(element);
@@ -36,7 +51,7 @@
         position: absolute;
         width: 15px;
         height: 10px;
-        background-color: red;
+        /* background-color: red; */
         border-radius: 3px;
     }
 </style>
