@@ -24,3 +24,5 @@ coverage
 tmp
 
 benchmarking/compare/.results
+
+.vscode

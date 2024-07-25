@@ -13,7 +13,7 @@
         if (ctx === null) {
             throw new Error("Could not get 2d context");
         }
-        createRoad({x: 0, y: 0}, {x: 900, y: 550}, ctx);
+        createRoad({ x: 100, y: 100 }, { x: 550, y: 900 }, ctx);
 
         for (let i = 0; i < 2; i++) {
             createDriver();
@@ -21,17 +21,11 @@
     });
 
     const getCarColour = (() => {
-        const colours = [
-            'red',
-            'blue',
-            'green',
-            'yellow',
-            'purple',
-        ]
+        const colours = ["red", "blue", "green", "yellow", "purple"];
         return () => {
             return colours[Math.floor(Math.random() * colours.length)];
-        }
-    })()
+        };
+    })();
 
     function createDriver() {
         const driver = new Driver();
@@ -53,7 +47,11 @@
         return driver;
     }
 
-    function createRoad(start: Vector, end: Vector, ctx: CanvasRenderingContext2D) {
+    function createRoad(
+        start: Vector,
+        end: Vector,
+        ctx: CanvasRenderingContext2D,
+    ) {
         const road = new Road(start, end);
         roads.push(road);
         road.draw(ctx);
@@ -61,8 +59,7 @@
 </script>
 
 <div id="environment" bind:this={environment}>
-    <canvas id="canvas" width="800" height="800" bind:this={canvas}>
-    </canvas>
+    <canvas id="canvas" width="800" height="800" bind:this={canvas}> </canvas>
 </div>
 
 <style scoped>
@@ -71,5 +68,9 @@
         width: 15px;
         height: 10px;
         border-radius: 3px;
+        top: 0;
+    }
+    #environment {
+        position: relative;
     }
 </style>

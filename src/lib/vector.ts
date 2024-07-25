@@ -26,13 +26,22 @@ export function magnitude(v: Vector) {
 
 export function normalize(v: Vector) {
   const mag = magnitude(v);
+  if (mag === 0) {
+    return { x: 0, y: 0 };
+  }
   return { x: v.x / mag, y: v.y / mag };
 }
 
 export function angleBetweenVectors(v1: Vector, v2: Vector) {
-  const dotProd = dotProduct(v1, v2);
+  if (Math.abs(v1.x - v2.x) < Number.EPSILON && Math.abs(v1.y - v2.y) < Number.EPSILON) {
+    return 0;
+  }
   const magV1 = magnitude(v1);
   const magV2 = magnitude(v2);
+  if (magV1 === 0 || magV2 === 0) {
+    return 0;
+  }
+  const dotProd = dotProduct(v1, v2);
   const cosTheta = dotProd / (magV1 * magV2);
   return Math.acos(cosTheta); // Returns the angle in radians
 }
