@@ -15,7 +15,7 @@
         }
         createRoad({ x: 100, y: 100 }, { x: 550, y: 900 }, ctx);
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < 1; i++) {
             createDriver();
         }
     });
@@ -43,7 +43,7 @@
 
         setInterval(() => {
             driver.nextMove();
-        }, 1);
+        }, 10);
         return driver;
     }
 
@@ -72,5 +72,9 @@
     }
     #environment {
         position: relative;
+        text-align: left;
+    }
+    #canvas {
+        margin: 0;
     }
 </style>
