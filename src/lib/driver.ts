@@ -1,7 +1,9 @@
 import { Car } from "./car";
+import { Intelligence } from "./intelligence";
 
 export class Driver {
     #car: Car = new Car();
+    #intelligence: Intelligence = new Intelligence();
     #history: ActionHistory = new ActionHistory();
     #ability: DriverAbility;
     #state: DriverState;
@@ -16,47 +18,44 @@ export class Driver {
     }
 
     nextMove() {
-        // Decide next move based on: 
-        // - Current velocity
-        // - Road layout
-        // - Action history
-        // - Ability
-        // - State
-        this.randomSteer();
-        this.randomAccelerate();
+        const { steer, accelerate } = this.#intelligence.nextMove(this);
+        this.car.steer(steer);
+        this.car.accelerate(accelerate);
+        // this.randomSteer();
+        // this.randomAccelerate();
         this.car.update();
     }
 
-    randomSteer() {
-        const p = Math.random();
-        if (p > .3) {
-            const amount = Math.random() - 0.5 - 0.5;
-            console.log(amount);
-            this.car.steer(amount * .1);
-        }
-    }
+    // randomSteer() {
+    //     const p = Math.random();
+    //     if (p > .3) {
+    //         const amount = Math.random() - 0.5 - 0.5;
+    //         console.log(amount);
+    //         this.car.steer(amount * .1);
+    //     }
+    // }
 
-    randomAccelerate() {
-        if (this.car.velocity > 1) {
-            this.car.brake(.3);
-        } else {
-            this.car.accelerate(.5);
-        }
-    }
+    // randomAccelerate() {
+    //     if (this.car.velocity > 0.5) {
+    //         this.car.brake(.3);
+    //     } else {
+    //         this.car.accelerate(.5);
+    //     }
+    // }
 
     accelerate(amount: number) {
-        this.car.accelerate(amount);
-        this.#history.add(ActionType.Acceleration, amount);
+        const accelerated = this.car.accelerate(amount);
+        this.#history.add(ActionType.Acceleration, accelerated);
     }
 
     brake(amount: number) {
-        this.car.brake(amount);
-        this.#history.add(ActionType.Acceleration, -amount);
+        const decelerated = this.car.brake(amount);
+        this.#history.add(ActionType.Acceleration, -decelerated);
     }
 
     steer(amount: number) {
-        this.car.steer(amount);
-        this.#history.add(ActionType.Steering, amount);
+        const changed = this.car.steer(amount);
+        this.#history.add(ActionType.Steering, changed);
     }
 
     static default() {
@@ -104,7 +103,7 @@ type ActionHistoryEpoch = {
     value: number;
 }
 
-class ActionHistory {
+export class ActionHistory {
     #history: ActionHistoryEpoch[];
     #index: number = 0;
 

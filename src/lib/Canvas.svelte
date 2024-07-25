@@ -1,18 +1,25 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { Driver } from "./driver";
+    import { Road } from "./road";
+    import type { Vector } from "./vector";
 
-    let canvas: HTMLDivElement;
+    let environment: HTMLDivElement;
+    let canvas: HTMLCanvasElement;
     const drivers: Driver[] = [];
-    let driverCount = 0;
+    const roads: Road[] = [];
     onMount(() => {
-        for (let i = 0; i < 10; i++) {
-            const driver = createDriver();
-            drivers.push(driver);
+        const ctx = canvas.getContext("2d");
+        if (ctx === null) {
+            throw new Error("Could not get 2d context");
+        }
+        createRoad({x: 0, y: 0}, {x: 900, y: 550}, ctx);
+
+        for (let i = 0; i < 2; i++) {
+            createDriver();
         }
     });
 
-    
     const getCarColour = (() => {
         const colours = [
             'red',
@@ -30,28 +37,39 @@
         const driver = new Driver();
 
         const element = document.createElement("div");
-        element.id = `car-${driverCount++}`;
+        element.id = `car-${drivers.length}`;
         element.style.background = getCarColour();
         element.classList.add("car");
 
+        driver.car.road = roads[0];
         driver.car.attach(element);
-        canvas.appendChild(element);
+        environment.appendChild(element);
+
+        drivers.push(driver);
 
         setInterval(() => {
             driver.nextMove();
         }, 1);
         return driver;
     }
+
+    function createRoad(start: Vector, end: Vector, ctx: CanvasRenderingContext2D) {
+        const road = new Road(start, end);
+        roads.push(road);
+        road.draw(ctx);
+    }
 </script>
 
-<div id="canvas" bind:this={canvas}></div>
+<div id="environment" bind:this={environment}>
+    <canvas id="canvas" width="800" height="800" bind:this={canvas}>
+    </canvas>
+</div>
 
-<style>
+<style scoped>
     :global(.car) {
         position: absolute;
         width: 15px;
         height: 10px;
-        /* background-color: red; */
         border-radius: 3px;
     }
 </style>
