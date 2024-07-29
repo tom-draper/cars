@@ -3,6 +3,7 @@
     import { Driver } from "./driver";
     import { Road } from "./road";
     import type { Vector } from "./vector";
+    import type { Car } from "./car";
 
     let environment: HTMLDivElement;
     let canvas: HTMLCanvasElement;
@@ -13,44 +14,44 @@
         if (ctx === null) {
             throw new Error("Could not get 2d context");
         }
-        createRoad({ x: 100, y: 100 }, { x: 550, y: 900 }, ctx);
+        createRoad(ctx, { x: 100, y: 100 }, { x: 550, y: 900 });
+        createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 });
 
         for (let i = 0; i < 1; i++) {
             createDriver();
+            setTimeout(() => {
+                createDriver();
+            }, 1000);
         }
     });
 
-    const getCarColour = (() => {
-        const colours = ["red", "blue", "green", "yellow", "purple"];
-        return () => {
-            return colours[Math.floor(Math.random() * colours.length)];
-        };
-    })();
+
+
 
     function createDriver() {
         const driver = new Driver();
 
-        const element = document.createElement("div");
-        element.id = `car-${drivers.length}`;
-        element.style.background = getCarColour();
-        element.classList.add("car");
+        driver.car.setRoad(roads);
 
-        driver.car.road = roads[0];
+        const element = document.createElement("div");
         driver.car.attach(element);
         environment.appendChild(element);
 
         drivers.push(driver);
 
         setInterval(() => {
-            driver.nextMove();
+            driver.nextMove(drivers);
+            driver.car.setRoad(roads);
         }, 10);
         return driver;
     }
 
     function createRoad(
+        ctx: CanvasRenderingContext2D,
         start: Vector,
         end: Vector,
-        ctx: CanvasRenderingContext2D,
+        control1: Vector | null = null,
+        control2: Vector | null = null,
     ) {
         const road = new Road(start, end);
         roads.push(road);

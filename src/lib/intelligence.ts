@@ -1,6 +1,7 @@
 import type { Driver } from "./driver";
-import { addVectors, angleBetweenVectors, dotProduct, magnitude, multiplyVectorByScalar, normalize, rotateVector, subtractVectors, vectorToRadians, type Vector } from "./vector";
+import { addVectors, crossProduct, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
 import type { Road } from "./road";
+import type { Car } from "./car";
 
 type Move = {
     steer: number;
@@ -9,15 +10,23 @@ type Move = {
 }
 
 export class Intelligence {
-    nextMove(driver: Driver): Move {
+    nextMove(driver: Driver, drivers: Driver[]): Move {
         // Decide next move based on: 
         // - Current velocity
         // - Road layout
         // - Action history
         // - Ability
         // - State
-        const steer = this.#towardsNearestRoad(driver.car.road, driver.car.position, driver.car.directionVector);
-        const {accelerate, brake} = this.#controlSpeed(driver.car.velocity, 0.3);
+        const steer = this.#towardsNearestRoad(driver.car);
+        // if (steer > 0) {
+        //     console.log('Steering right');
+        // } else if (steer < 0) {
+        //     console.log('Steering left');
+        // } else {
+        //     console.log('No steering');
+        // }
+        const cars = drivers.map(d => d.car);
+        const {accelerate, brake} = this.#controlSpeed(driver.car, cars, 0.3);
         return { steer, accelerate, brake};
     }
 
@@ -34,10 +43,14 @@ export class Intelligence {
         return addVectors(lineStart, multiplyVectorByScalar(AB, t));
     }
     
-    #towardsNearestRoad(road: Road | null, position: Vector, direction: Vector) {
+    #towardsNearestRoad(car: Car) {
+        const road = car.road;
         if (road === null) {
             return 0;
         }
+
+        const position = car.position;
+        const direction = car.directionVector;
 
         const closestPoint = this.#closestPointOnLineSegment(position, road.start, road.end);
         const distanceToClosestPoint = magnitude(subtractVectors(closestPoint, position));
@@ -48,23 +61,14 @@ export class Intelligence {
 
         const shortestPath = subtractVectors(targetPoint, position);
 
-        const crossProduct = direction.x * shortestPath.y - direction.y * shortestPath.x;
-        // const angleToRotate = angleBetweenVectors(direction, shortestPath);
-        const tolerance = .05;
-        if (Math.abs(crossProduct) < tolerance) {
+        const steerValue = crossProduct(direction, shortestPath);
+        const tolerance = 0.05;
+        if (Math.abs(steerValue) < tolerance) {
             return 0;
         }
 
-        const steerIntensity = .01
-        if (crossProduct < 0) {
-            // console.log(`Turning left ${steerIntensity}`)
-            return -steerIntensity;
-        } else if (crossProduct > 0) {
-            // console.log(`Turning right ${steerIntensity}`)
-            return steerIntensity;
-        }
-        console.log(`Not steering ${steerIntensity}`)
-        return 0;
+        const steerIntensity = 0.01
+        return steerValue < 0 ? -steerIntensity : steerIntensity;
     }
 
     // #furthestPointWithinRadius(road: Road, position: Vector, direction: Vector, radius: number): Vector {
@@ -102,30 +106,34 @@ export class Intelligence {
         const AB = subtractVectors(road.end, road.start);
         const directionNormalized = normalize(direction);
 
-        let furthestPoint: Vector = position;
-        let maxDistance = 0;
+        const furthestPoint: {position: Vector, distance: number} = {position, distance: 0};
 
         // Sample along the road with a larger step size for better performance
-        for (let t = 0; t <= 1; t += 0.05) {
+        for (let t = 0; t <= 1; t += 0.02) {
             const pointOnRoad = addVectors(road.start, multiplyVectorByScalar(AB, t));
             const vectorToPoint = subtractVectors(pointOnRoad, position);
             
-            // Check if the point is within the radius
-            if (magnitude(vectorToPoint) <= radius) {
-                // Check if the point is in the direction of the car
-                if (dotProduct(directionNormalized, vectorToPoint) > 0) {
-                    const distance = magnitude(vectorToPoint);
-                    
-                    // Update furthest point if this point is further
-                    if (distance > maxDistance) {
-                        maxDistance = distance;
-                        furthestPoint = pointOnRoad;
-                    }
-                }
+            // Skip if the point is outside the radius
+            if (magnitude(vectorToPoint) > radius) {
+                continue;
+            }
+            // Skip if the point is in the opposite direction to the car
+            if (dotProduct(directionNormalized, vectorToPoint) <= 0) {
+                continue;
+            }
+
+            const distance = magnitude(vectorToPoint);
+            
+            // Update furthest point if this point is further
+            if (distance > furthestPoint.distance) {
+                furthestPoint.distance = distance;
+                furthestPoint.position = pointOnRoad;
             }
         }
 
-        return furthestPoint;
+        // console.log(furthestPoint.distance);
+
+        return furthestPoint.position;
     }
 
     // #furthestPointWithinRadius(road: Road, position: Vector, direction: Vector, radius: number): Vector {
@@ -155,12 +163,35 @@ export class Intelligence {
     //     }
     // }
 
-    #controlSpeed(currentVelocity: number, speedLimit: number) {
-        if (currentVelocity > speedLimit) {
+    #controlSpeed(car: Car, cars: Car[], speedLimit: number) {
+        if (this.#headingTowardsOtherDrivers(car, cars)) {
+            console.log(car.id.toString() + " braking to avoid crash")
+            return {accelerate: 0, brake: 10};
+        }
+
+        if (Math.random() < 0.1) {
+            return {accelerate: 0, brake: 5};
+        }
+
+        if (car.velocity > speedLimit) {
             return {accelerate: 0, brake: .3};
-        } else if (currentVelocity < speedLimit) {
+        } else if (car.velocity < speedLimit) {
             return {accelerate: .5, brake: 0};
         }
         return {accelerate: 0, brake: 0};
+    }
+
+    #headingTowardsOtherDrivers(car: Car, cars: Car[]) {
+        for (const otherCar of cars) {
+            if (otherCar.id === car.id) {
+                continue;
+            }
+            const vectorToDriver = subtractVectors(otherCar.position, car.position);
+            const distance = magnitude(vectorToDriver);
+            if (distance < 30 && dotProduct(car.directionVector, vectorToDriver) > 0) {
+                return true;
+            }
+        }
+        return false;
     }
 }

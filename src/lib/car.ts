@@ -2,6 +2,14 @@ import type { Vector } from "./vector";
 import type { Road } from "./road";
 
 export class Car {
+    static #distanceUnit = 1;
+    static #steerUnit = 1;
+    static #drag = 0.1;
+    static #nextCarID = 0;
+    static #colors = ["red", "blue", "green", "yellow", "purple"];
+
+    #id: number = Car.#nextID();
+    #color: string = Car.randomColor();
     #velocity = 0;
     #direction = 0;
     #position: Vector = { x: 0, y: 0 };
@@ -9,12 +17,12 @@ export class Car {
     #performance: CarPerformance;
     #element: HTMLDivElement | null = null;
 
-    static #distanceUnit = 1;
-    static #steerUnit = 1;
-    static #drag = 0.1;
-
     constructor(performance: CarPerformance = CarPerformance.default()) {
         this.#performance = performance;
+    }
+
+    get id() {
+        return this.#id;
     }
 
     get velocity() {
@@ -43,6 +51,9 @@ export class Car {
 
     attach(element: HTMLDivElement) {
         if (element instanceof HTMLDivElement) {
+            element.id = `car-${this.#id}`;
+            element.style.background = this.#color;
+            element.classList.add("car");
             this.#element = element;
         }
     }
@@ -80,11 +91,44 @@ export class Car {
         this.#updateCarElement();
     }
 
+    setRoad(roads: Road[]) {
+        this.#road = this.#nearestRoad(roads);
+    }
+
+    #nearestRoad(roads: Road[]) {
+        const nearest: {road: Road, distance: number} = {
+            road: roads[0],
+            distance: this.distanceTo(roads[0].start),
+        };
+        for (let i = 1; i < roads.length; i++) {
+            const distance = this.distanceTo(roads[i].start);
+            if (distance < nearest.distance) {
+                nearest.road = roads[i];
+                nearest.distance = distance;
+            }
+        }
+        return nearest.road;
+    }
+
     #updateCarElement() {
         if (this.#element) {
             // Apply the rotation and translation
             this.#element.style.transform = Car.#translationStyle(this.#direction, this.#position);
         }
+    }
+
+    distanceTo(position: Vector) {
+        const dx = this.#position.x - position.x;
+        const dy = this.#position.y - position.y;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    static #nextID() {
+        return Car.#nextCarID;
+    }
+
+    static randomColor() {
+        return Car.#colors[Math.floor(Math.random() * Car.#colors.length)];
     }
 
     static #translationStyle(direction: number, position: Vector) {

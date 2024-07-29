@@ -3,15 +3,24 @@ import type { Vector } from "./vector";
 export class Road {
     #start: Vector;
     #end: Vector;
-    constructor(start: Vector, end: Vector) {
+    #control1: Vector | null;
+    #control2: Vector | null;
+
+    constructor(start: Vector, end: Vector, control1: Vector | null = null, control2: Vector | null = null) {
         this.#start = start;
         this.#end = end;
+        this.#control1 = control1;
+        this.#control2 = control2;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
         ctx.beginPath();
         ctx.moveTo(this.#start.x, this.#start.y);
-        ctx.lineTo(this.#end.x, this.#end.y);
+        if (this.#control1 !== null && this.#control2 !== null) {
+            ctx.bezierCurveTo(this.#control1.x, this.#control1.y, this.#control2.x, this.#control2.y, this.#end.x, this.#end.y);
+        } else {
+            ctx.lineTo(this.#end.x, this.#end.y);
+        }
         ctx.stroke();
     }
 
@@ -21,6 +30,14 @@ export class Road {
 
     get end() {
         return this.#end;
+    }
+
+    get control1() {
+        return this.#control1;
+    }
+
+    get control2() {
+        return this.#control2;
     }
 
     get direction() {
