@@ -3,7 +3,6 @@
     import { Driver } from "./driver";
     import { Road } from "./road";
     import type { Vector } from "./vector";
-    import type { Car } from "./car";
 
     let environment: HTMLDivElement;
     let canvas: HTMLCanvasElement;
@@ -24,9 +23,6 @@
             }, 1000);
         }
     });
-
-
-
 
     function createDriver() {
         const driver = new Driver();
@@ -53,7 +49,7 @@
         control1: Vector | null = null,
         control2: Vector | null = null,
     ) {
-        const road = new Road(start, end);
+        const road = new Road(start, end, control1, control2);
         roads.push(road);
         road.draw(ctx);
     }
