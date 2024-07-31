@@ -1,11 +1,11 @@
 <script lang="ts">
-    import Canvas from "./lib/Canvas.svelte";
+	import Canvas from "./lib/Canvas.svelte";
 </script>
 
 <main>
-    <div>
-        <Canvas />
-    </div>
+	<div>
+		<Canvas />
+	</div>
 </main>
 
 <style>
