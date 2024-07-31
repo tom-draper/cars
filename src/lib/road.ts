@@ -54,6 +54,10 @@ export class Road {
         };
     }
 
+    isBezier(): this is { control1: Vector; control2: Vector } {
+        return this.#control1 !== null && this.#control2 !== null;
+    }
+
     static #nextID() {
         return Road.#nextCarID++;
     }

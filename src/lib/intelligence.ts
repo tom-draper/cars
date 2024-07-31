@@ -2,6 +2,7 @@ import type { Driver } from "./driver";
 import { addVectors, crossProduct, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
 import type { Road } from "./road";
 import type { Car } from "./car";
+import Debug from "./debug";
 
 type Move = {
     steer: number;
@@ -26,42 +27,97 @@ export class Intelligence {
         //     console.log('No steering');
         // }
         const cars = drivers.map(d => d.car);
-        const {accelerate, brake} = this.#controlSpeed(driver.car, cars, 0.3);
-        return { steer, accelerate, brake};
+        const { accelerate, brake } = this.#controlSpeed(driver.car, cars, 0.3);
+        return { steer, accelerate, brake };
+    }
+
+    #closestPointOnRoad(carPosition: Vector, road: Road) {
+        if (road.isBezier()) {
+            return this.#closestPointOnBezierLine(carPosition, road.start, road.end, road.control1, road.control2)
+        } else {
+            return this.#closestPointOnLineSegment(carPosition, road.start, road.end);
+        }
     }
 
     #closestPointOnLineSegment(carPosition: Vector, lineStart: Vector, lineEnd: Vector) {
         const AB = subtractVectors(lineEnd, lineStart);
         const AP = subtractVectors(carPosition, lineStart);
-        
+
         const dotProd = dotProduct(AP, AB);
         const lengthSq = dotProduct(AB, AB);
-        
+
         let t = dotProd / lengthSq;
         t = Math.max(0, Math.min(1, t));  // Clamping t to the line segment
 
         return addVectors(lineStart, multiplyVectorByScalar(AB, t));
     }
-    
+
+    #closestPointOnBezierLine(carPosition: Vector, lineStart: Vector, lineEnd: Vector, control1: Vector, control2: Vector) {
+        // You would typically use a numerical method to minimize the distance,
+        // such as Newton's method or a simple optimization loop.
+
+        const best: { t: number, distance: number } = {
+            t: 0,
+            distance: Infinity
+        }
+
+        for (let t = 0; t <= 1; t += 0.02) {
+            const pointOnCurve = this.#bezierPoint(t, lineStart, lineEnd, control1, control2);
+            const distance = this.#distanceSquared(pointOnCurve, carPosition);
+            if (distance < best.distance) {
+                best.distance = distance;
+                best.t = t;
+            }
+        }
+
+        return this.#bezierPoint(best.t, lineStart, lineEnd, control1, control2);
+    }
+
+    #bezierPoint(t: number, lineStart: Vector, lineEnd: Vector, control1: Vector, control2: Vector) {
+        // Cubic Bezier curve formula
+        const x = Math.pow(1 - t, 3) * lineStart.x +
+            3 * Math.pow(1 - t, 2) * t * control1.x +
+            3 * (1 - t) * Math.pow(t, 2) * control2.x +
+            Math.pow(t, 3) * lineEnd.x;
+
+        const y = Math.pow(1 - t, 3) * lineStart.y +
+            3 * Math.pow(1 - t, 2) * t * control1.y +
+            3 * (1 - t) * Math.pow(t, 2) * control2.y +
+            Math.pow(t, 3) * lineEnd.y;
+
+        return { x, y };
+    }
+
+    #distanceSquared(point1: Vector, point2: Vector) {
+        return (point1.x - point2.x) ** 2 + (point1.y - point2.y) ** 2;
+    }
+
     #towardsNearestRoad(car: Car) {
         const road = car.road;
         if (road === null) {
+            console.log(`Road is null for car ${car.id}`)
             return 0;
         }
 
-        const position = car.position;
-        const direction = car.directionVector;
+        const { position, directionVector } = car;
 
-        const closestPoint = this.#closestPointOnLineSegment(position, road.start, road.end);
+        const closestPoint = this.#closestPointOnRoad(position, road);
+
+        Debug.color = 'red';
+        Debug.displayPoint(closestPoint);
+
         const distanceToClosestPoint = magnitude(subtractVectors(closestPoint, position));
 
-        const targetPoint = distanceToClosestPoint < 20 ? 
-            this.#furthestPointWithinRadius(road, position, direction, 35) : 
+        const targetPoint = distanceToClosestPoint < 20 ?
+            this.#furthestPointWithinRadiusOnRoad(road, position, directionVector, 35) :
             closestPoint;
+
+        Debug.color = 'green';
+        Debug.displayLine(position, targetPoint);
 
         const shortestPath = subtractVectors(targetPoint, position);
 
-        const steerValue = crossProduct(direction, shortestPath);
+        const steerValue = crossProduct(directionVector, shortestPath);
         const tolerance = 0.05;
         if (Math.abs(steerValue) < tolerance) {
             return 0;
@@ -71,48 +127,23 @@ export class Intelligence {
         return steerValue < 0 ? -steerIntensity : steerIntensity;
     }
 
-    // #furthestPointWithinRadius(road: Road, position: Vector, direction: Vector, radius: number): Vector {
-    //     const AB = subtractVectors(road.end, road.start);
-    //     const points = [];
-
-    //     // Check points along the road in both directions within the given radius
-    //     for (let t = 0; t <= 1; t += 0.01) {
-    //         const pointOnRoad = {
-    //             x: road.start.x + AB.x * t,
-    //             y: road.start.y + AB.y * t
-    //         };
-    //         const vectorToPoint = subtractVectors(pointOnRoad, position);
-    //         if (magnitude(vectorToPoint) <= radius && dotProduct(direction, vectorToPoint) > 0) {
-    //             points.push(pointOnRoad);
-    //         }
-    //     }
-
-    //     // Find the furthest point within the radius and in the direction of the car
-    //     let furthestPoint = position;
-    //     let maxDistance = 0;
-
-    //     for (const point of points) {
-    //         const distance = magnitude(subtractVectors(point, position));
-    //         if (distance > maxDistance) {
-    //             maxDistance = distance;
-    //             furthestPoint = point;
-    //         }
-    //     }
-
-    //     return furthestPoint;
-    // }
-
-    #furthestPointWithinRadius(road: Road, position: Vector, direction: Vector, radius: number): Vector {
+    #furthestPointWithinRadiusOnRoad(road: Road, position: Vector, direction: Vector, radius: number): Vector {
         const AB = subtractVectors(road.end, road.start);
         const directionNormalized = normalize(direction);
 
-        const furthestPoint: {position: Vector, distance: number} = {position, distance: 0};
+        const furthestPoint: { position: Vector, distance: number } = { position, distance: 0 };
 
         // Sample along the road with a larger step size for better performance
         for (let t = 0; t <= 1; t += 0.02) {
-            const pointOnRoad = addVectors(road.start, multiplyVectorByScalar(AB, t));
+            let pointOnRoad: Vector;
+            if (road.isBezier()) {
+                pointOnRoad = this.#bezierPoint(t, road.start, road.end, road.control1, road.control2)
+            } else {
+                pointOnRoad = addVectors(road.start, multiplyVectorByScalar(AB, t));
+            }
+            // const pointOnRoad = addVectors(start, multiplyVectorByScalar(AB, t));
             const vectorToPoint = subtractVectors(pointOnRoad, position);
-            
+
             // Skip if the point is outside the radius
             if (magnitude(vectorToPoint) > radius) {
                 continue;
@@ -123,7 +154,7 @@ export class Intelligence {
             }
 
             const distance = magnitude(vectorToPoint);
-            
+
             // Update furthest point if this point is further
             if (distance > furthestPoint.distance) {
                 furthestPoint.distance = distance;
@@ -131,54 +162,25 @@ export class Intelligence {
             }
         }
 
-        // console.log(furthestPoint.distance);
-
         return furthestPoint.position;
     }
-
-    // #furthestPointWithinRadius(road: Road, position: Vector, direction: Vector, radius: number): Vector {
-    //     const AB = subtractVectors(road.end, road.start);
-    //     const directionNormalized = normalize(direction);
-
-    //     // Compute the projection of the car's position onto the road line segment
-    //     const AP = subtractVectors(position, road.start);
-    //     const ABLengthSquared = dotProduct(AB, AB);
-    //     const projection = dotProduct(AP, AB) / ABLengthSquared;
-    //     const clampedProjection = Math.max(0, Math.min(1, projection));
-
-    //     // Calculate the closest point on the road segment to the car
-    //     const closestPoint = addVectors(road.start, multiplyVectorByScalar(AB, clampedProjection));
-
-    //     // Check if the closest point is within the radius and in the direction of the car
-    //     const vectorToClosestPoint = subtractVectors(closestPoint, position);
-    //     if (magnitude(vectorToClosestPoint) > radius) {
-    //         // If the closest point is outside the radius, we need to find a point on the circle edge
-    //         // Compute the furthest point along the direction vector within the circle
-    //         const distance = radius; // We are looking at the radius length
-    //         const furthestPoint = addVectors(position, multiplyVectorByScalar(directionNormalized, distance));
-
-    //         return furthestPoint;
-    //     } else {
-    //         return closestPoint;
-    //     }
-    // }
 
     #controlSpeed(car: Car, cars: Car[], speedLimit: number) {
         if (this.#headingTowardsOtherDrivers(car, cars)) {
             console.log(car.id.toString() + " braking to avoid crash")
-            return {accelerate: 0, brake: 10};
+            return { accelerate: 0, brake: 10 };
         }
 
         if (Math.random() < 0.1) {
-            return {accelerate: 0, brake: 5};
+            return { accelerate: 0, brake: 5 };
         }
 
         if (car.velocity > speedLimit) {
-            return {accelerate: 0, brake: .3};
+            return { accelerate: 0, brake: .3 };
         } else if (car.velocity < speedLimit) {
-            return {accelerate: .5, brake: 0};
+            return { accelerate: .5, brake: 0 };
         }
-        return {accelerate: 0, brake: 0};
+        return { accelerate: 0, brake: 0 };
     }
 
     #headingTowardsOtherDrivers(car: Car, cars: Car[]) {
