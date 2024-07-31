@@ -14,13 +14,14 @@
             throw new Error("Could not get 2d context");
         }
         createRoad(ctx, { x: 100, y: 100 }, { x: 550, y: 900 });
-        createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 });
+        // createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 });
+        createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 }, {x: 500, y: 500}, {x: 100, y: 200});
 
         for (let i = 0; i < 1; i++) {
             createDriver();
             setTimeout(() => {
                 createDriver();
-            }, 1000);
+            }, 100);
         }
     });
 

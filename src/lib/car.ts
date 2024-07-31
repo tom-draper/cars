@@ -6,7 +6,7 @@ export class Car {
     static #steerUnit = 1;
     static #drag = 0.1;
     static #nextCarID = 0;
-    static #colors = ["red", "blue", "green", "yellow", "purple"];
+    static #colors = ["white", "black", "gray", "silver", "brown", "orange", "beige", "gold", "red", "blue", "green", "yellow", "purple"];
 
     #id: number = Car.#nextID();
     #color: string = Car.randomColor();
@@ -98,10 +98,10 @@ export class Car {
     #nearestRoad(roads: Road[]) {
         const nearest: {road: Road, distance: number} = {
             road: roads[0],
-            distance: this.distanceTo(roads[0].start),
+            distance: Math.min(this.distanceTo(roads[0].start), this.distanceTo(roads[0].end)),
         };
         for (let i = 1; i < roads.length; i++) {
-            const distance = this.distanceTo(roads[i].start);
+            const distance = Math.min(this.distanceTo(roads[i].start), this.distanceTo(roads[i].end));
             if (distance < nearest.distance) {
                 nearest.road = roads[i];
                 nearest.distance = distance;
@@ -124,7 +124,7 @@ export class Car {
     }
 
     static #nextID() {
-        return Car.#nextCarID;
+        return Car.#nextCarID++;
     }
 
     static randomColor() {

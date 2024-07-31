@@ -1,6 +1,9 @@
 import type { Vector } from "./vector";
 
 export class Road {
+    static #nextCarID = 0;
+
+    #id: number = Road.#nextID();
     #start: Vector;
     #end: Vector;
     #control1: Vector | null;
@@ -24,6 +27,10 @@ export class Road {
         ctx.stroke();
     }
 
+    get id() {
+        return this.#id;
+    }
+
     get start() {
         return this.#start;
     }
@@ -45,5 +52,9 @@ export class Road {
             x: this.#end.x - this.#start.x,
             y: this.#end.y - this.#start.y
         };
+    }
+
+    static #nextID() {
+        return Road.#nextCarID++;
     }
 }
