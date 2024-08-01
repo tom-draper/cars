@@ -15,6 +15,10 @@
 			throw new Error("Could not get 2d context");
 		}
 
+		const {handleMouseDown, handleMouseUp} = setupMouseHandler(ctx);
+		canvas.addEventListener('mousedown', handleMouseDown)
+		canvas.addEventListener('mouseup', handleMouseUp)
+
 		createRoad(ctx, { x: 100, y: 100 }, { x: 550, y: 900 });
 		// createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 });
 		createRoad(
@@ -64,10 +68,39 @@
 		roads.push(road);
 		road.draw(ctx);
 	}
+
+	function setupMouseHandler(ctx: CanvasRenderingContext2D) {
+		let startMouseX: number;
+		let startMouseY: number;
+
+		const handleMouseDown = (event: MouseEvent) => {
+			startMouseX = event.clientX;
+			startMouseY = event.clientY;
+		};
+
+		const padding = 32;
+		const handleMouseUp = (event: MouseEvent) => {
+			const endMouseX = event.clientX;
+			const endMouseY = event.clientY;
+			createRoad(
+				ctx,
+				{ x: startMouseX - padding, y: startMouseY - padding },
+				{ x: endMouseX - padding, y: endMouseY - padding },
+			);
+		};
+
+		return { handleMouseDown, handleMouseUp };
+	};
 </script>
 
 <div id="environment" bind:this={environment}>
-	<canvas id="canvas" width="800" height="800" bind:this={canvas}> </canvas>
+	<canvas
+		id="canvas"
+		width="800"
+		height="800"
+		bind:this={canvas}
+	>
+	</canvas>
 </div>
 
 <style scoped>
