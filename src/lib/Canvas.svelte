@@ -3,7 +3,7 @@
 	import { Driver } from "./driver";
 	import { Road } from "./road";
 	import type { Vector } from "./vector";
-	import Debug from "./debug";
+	import { init } from "./debug";
 
 	let environment: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
@@ -29,7 +29,7 @@
 			{ x: 100, y: 200 },
 		);
 
-		Debug.init(ctx, roads, drivers);
+		init(ctx, roads, drivers);
 
 		for (let i = 0; i < 1; i++) {
 			createDriver();

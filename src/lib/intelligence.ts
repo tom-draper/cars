@@ -2,7 +2,7 @@ import type { Driver } from "./driver";
 import { addVectors, crossProduct, distanceSquared, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
 import type { Road } from "./road";
 import type { Car } from "./car";
-import Debug from "./debug";
+import { setColor, displayLine, displayPoint } from "./debug";
 
 type Move = {
 	steer: number;
@@ -97,7 +97,7 @@ export class Intelligence {
 	#towardsNearestRoad(car: Car) {
 		const road = car.road;
 		if (road === null) {
-			console.log(`Road is null for car ${car.id}`)
+			console.log(`Car ${car.id}: Road is null`)
 			return 0;
 		}
 
@@ -108,8 +108,8 @@ export class Intelligence {
 			return 0;
 		}
 
-		Debug.color = 'red';
-		Debug.displayPoint(nearestPoint);
+		setColor('red');
+		displayPoint(nearestPoint);
 
 		const distanceToClosestPoint = magnitude(subtractVectors(nearestPoint, position));
 
@@ -117,8 +117,8 @@ export class Intelligence {
 			this.#furthestPointWithinRadiusOnRoad(road, position, directionVector, Intelligence.furthestPointRadius) :
 			nearestPoint;
 
-		Debug.color = 'green';
-		Debug.displayLine(position, targetPoint);
+		setColor('green');
+		displayLine(position, targetPoint);
 
 		const shortestPath = subtractVectors(targetPoint, position);
 
@@ -173,7 +173,7 @@ export class Intelligence {
 
 	#controlSpeed(car: Car, cars: Car[], speedLimit: number) {
 		if (this.#headingTowardsOtherDrivers(car, cars)) {
-			console.log(car.id.toString() + " braking to avoid crash")
+			console.log(`Car ${car.id} braking to avoid crash`)
 			return { accelerate: 0, brake: 10 };
 		}
 

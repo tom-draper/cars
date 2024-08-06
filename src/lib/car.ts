@@ -92,15 +92,21 @@ export class Car {
 	}
 
 	setRoad(roads: Road[]) {
-		this.#road = this.#nearestRoad(roads);
+		const road = this.#nearestRoad(roads);
+		const oldRoadID = this.#road === null ? 'null' : this.#road.id;
+		const newRoadID = road === null ? 'null' : road.id;
+		this.#road = road;
+		if (oldRoadID !== newRoadID) {
+			console.log(`Car ${this.id} changed road from ${oldRoadID} to ${newRoadID}`)
+		}
 	}
 
 	#nearestRoad(roads: Road[]) {
-		const nearest: { road: Road, distance: number } = {
-			road: roads[0],
-			distance: Math.min(this.distanceTo(roads[0].start), this.distanceTo(roads[0].end)),
+		const nearest: { road: Road | null, distance: number } = {
+			road: null,
+			distance: Infinity,
 		};
-		for (let i = 1; i < roads.length; i++) {
+		for (let i = 0; i < roads.length; i++) {
 			const distance = Math.min(this.distanceTo(roads[i].start), this.distanceTo(roads[i].end));
 			if (distance < nearest.distance) {
 				nearest.road = roads[i];
