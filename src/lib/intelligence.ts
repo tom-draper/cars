@@ -15,7 +15,7 @@ export class Intelligence {
 	static furthestPointRadius: number = 35;
 	static targetRoadDistance: number = 20;
 	static steerIntensity: number = 0.01;
-	static steerTolerance: number = 0.05;
+	static steerTolerance: number = 0.005;
 
 	nextMove(driver: Driver, drivers: Driver[]): Move {
 		// Decide next move based on: 
@@ -56,6 +56,7 @@ export class Intelligence {
 		t = Math.max(0, Math.min(1, t));  // Clamping t to the line segment
 
 		const closestPoint = addVectors(lineStart, multiplyVectorByScalar(AB, t));
+		console.log(0, closestPoint);
 		return closestPoint;
 	}
 
@@ -75,6 +76,8 @@ export class Intelligence {
 				best.position = pointOnCurve;
 			}
 		}
+
+		console.log(1, best.position);
 
 		return best.position;
 	}

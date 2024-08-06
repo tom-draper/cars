@@ -4,6 +4,7 @@
 	import { Road } from "./road";
 	import type { Vector } from "./vector";
 	import { init } from "./debug";
+    import { CANVAS_DIMENSIONS } from "./consts";
 
 	let environment: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
@@ -28,6 +29,7 @@
 			{ x: 500, y: 500 },
 			{ x: 100, y: 200 },
 		);
+		createRoad(ctx, {x: 1200, y: 500}, {x: 100, y: 600})
 
 		init(ctx, roads, drivers);
 
@@ -96,8 +98,8 @@
 <div id="environment" bind:this={environment}>
 	<canvas
 		id="canvas"
-		width="800"
-		height="800"
+		width={CANVAS_DIMENSIONS.x}
+		height={CANVAS_DIMENSIONS.y}
 		bind:this={canvas}
 	>
 	</canvas>
