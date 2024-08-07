@@ -18,9 +18,10 @@ export class Driver {
 	}
 
 	nextMove(drivers: Driver[]) {
-		const { steer, accelerate } = this.#intelligence.nextMove(this, drivers);
+		const { steer, accelerate, brake } = this.#intelligence.nextMove(this, drivers);
 		this.car.steer(steer);
 		this.car.accelerate(accelerate);
+		// this.car.brake(brake);
 		// this.randomSteer();
 		// this.randomAccelerate();
 		this.car.update();
