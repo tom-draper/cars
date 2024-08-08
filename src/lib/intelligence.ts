@@ -3,6 +3,7 @@ import { addVectors, crossProduct, distanceSquared, dotProduct, magnitude, multi
 import type { Road } from "./road";
 import type { Car } from "./car";
 import { setColor, displayLine, displayPoint } from "./debug";
+import { bezierPoint } from "./bezier";
 
 type Move = {
 	steer: number;
@@ -72,7 +73,7 @@ export class Intelligence {
 		}
 
 		for (let t = 0; t <= 1; t += Intelligence.stepSize) {
-			const pointOnCurve = this.#bezierPoint(t, lineStart, lineEnd, control1, control2);
+			const pointOnCurve = bezierPoint(t, lineStart, lineEnd, control1, control2);
 			const distance = distanceSquared(pointOnCurve, position);
 			if (distance < best.distance) {
 				best.distance = distance;
@@ -81,21 +82,6 @@ export class Intelligence {
 		}
 
 		return best.point;
-	}
-
-	#bezierPoint(t: number, lineStart: Vector, lineEnd: Vector, control1: Vector, control2: Vector) {
-		// Cubic Bezier curve formula
-		const x = Math.pow(1 - t, 3) * lineStart.x +
-			3 * Math.pow(1 - t, 2) * t * control1.x +
-			3 * (1 - t) * Math.pow(t, 2) * control2.x +
-			Math.pow(t, 3) * lineEnd.x;
-
-		const y = Math.pow(1 - t, 3) * lineStart.y +
-			3 * Math.pow(1 - t, 2) * t * control1.y +
-			3 * (1 - t) * Math.pow(t, 2) * control2.y +
-			Math.pow(t, 3) * lineEnd.y;
-
-		return { x, y };
 	}
 
 	#towardsNearestRoad(car: Car) {
@@ -147,7 +133,7 @@ export class Intelligence {
 
 		// Sample along the road with a larger step size for better performance
 		for (let t = 0; t <= 1; t += Intelligence.stepSize) {
-			const pointOnRoad = this.#pointOnRoad(road, t);
+			const pointOnRoad = road.pointOnRoad(t);
 			const vectorToPoint = subtractVectors(pointOnRoad, position);
 
 			const distance = magnitude(vectorToPoint);
@@ -168,14 +154,7 @@ export class Intelligence {
 		return best.point;
 	}
 
-	#pointOnRoad(road: Road, t: number) {
-		if (road.isBezier()) {
-			return this.#bezierPoint(t, road.start, road.end, road.control1, road.control2)
-		} else {
-			const AB = subtractVectors(road.end, road.start);
-			return addVectors(road.start, multiplyVectorByScalar(AB, t));
-		}
-	}
+
 
 	#controlSpeed(car: Car, cars: Car[], speedLimit: number) {
 		if (this.#headingTowardsOtherDrivers(car, cars)) {

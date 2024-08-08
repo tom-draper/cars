@@ -1,4 +1,5 @@
-import type { Vector } from "./vector";
+import { bezierPoint } from "./bezier";
+import { addVectors, multiplyVectorByScalar, subtractVectors, type Vector } from "./vector";
 
 export class Road {
 	static #nextCarID = 0;
@@ -25,6 +26,15 @@ export class Road {
 			ctx.lineTo(this.#end.x, this.#end.y);
 		}
 		ctx.stroke();
+	}
+
+	pointOnRoad(t: number) {
+		if (this.#control1 !== null && this.#control2 !== null) {
+			return bezierPoint(t, this.#start, this.#end, this.#control1, this.#control2)
+		} else {
+			const AB = subtractVectors(this.#end, this.#start);
+			return addVectors(this.#start, multiplyVectorByScalar(AB, t));
+		}
 	}
 
 	get id() {
