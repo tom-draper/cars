@@ -47,13 +47,6 @@ export class Road {
 		return this.#control2;
 	}
 
-	get direction() {
-		return {
-			x: this.#end.x - this.#start.x,
-			y: this.#end.y - this.#start.y
-		};
-	}
-
 	isBezier(): this is { control1: Vector; control2: Vector } {
 		return this.#control1 !== null && this.#control2 !== null;
 	}

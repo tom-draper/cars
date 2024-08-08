@@ -4,6 +4,7 @@ import type { Road } from "./road";
 import type { Vector } from "./vector";
 
 let ctx: CanvasRenderingContext2D;
+let enabled = true;
 let roads: Road[];
 let drivers: Driver[];
 let pointCount: number = 0;
@@ -17,7 +18,11 @@ export function init(_ctx: CanvasRenderingContext2D, _roads: Road[], _drivers: D
 }
 
 export function displayPoint(point: Vector) {
-	if (pointCount % drivers.length === 0) {
+	if (!enabled) {
+		return;
+	}
+
+	if (pointCount > 0 && pointCount % drivers.length === 0) {
 		clearCanvas();
 	}
 	ctx.strokeStyle = color;
@@ -29,7 +34,11 @@ export function displayPoint(point: Vector) {
 }
 
 export function displayLine(start: Vector, end: Vector) {
-	if (lineCount % drivers.length === 0) {
+	if (!enabled) {
+		return;
+	}
+
+	if (lineCount > 0 && lineCount % drivers.length === 0) {
 		clearCanvas();
 	}
 	ctx.strokeStyle = color;
@@ -56,4 +65,12 @@ function redrawRoads() {
 
 export function setColor(_color: string) {
 	color = _color;
+}
+
+export function enableDebug() {
+	enabled = true;
+}
+
+export function disableDebug() {
+	enabled = false;
 }

@@ -1,4 +1,4 @@
-import type { Vector } from "./vector";
+import { addVectors, type Vector } from "./vector";
 import type { Road } from "./road";
 
 export class Car {
@@ -87,7 +87,7 @@ export class Car {
 
 		// Calculate new position based on current velocity and direction
 		const movement = this.#translationVector();
-		this.#position = this.#sumVectors(this.#position, movement);
+		this.#position = addVectors(this.#position, movement);
 		this.#updateCarElement();
 	}
 
@@ -145,10 +145,6 @@ export class Car {
 		const translateX = this.#velocity * Math.cos(this.#direction);
 		const translateY = this.#velocity * Math.sin(this.#direction);
 		return { x: translateX, y: translateY };
-	}
-
-	#sumVectors(a: Vector, b: Vector): Vector {
-		return { x: a.x + b.x, y: a.y + b.y };
 	}
 }
 
