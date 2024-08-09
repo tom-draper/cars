@@ -101,9 +101,9 @@ export class Intelligence {
 		setColor('red');
 		displayPoint(nearestPoint);
 
-		const distanceToClosestPoint = magnitude(subtractVectors(nearestPoint, position));
+		const distanceToNearestPoint = magnitude(subtractVectors(nearestPoint, position));
 
-		const targetPoint = distanceToClosestPoint < Intelligence.targetRoadDistance ?
+		const targetPoint = distanceToNearestPoint < Intelligence.targetRoadDistance ?
 			this.#furthestPointWithinRadiusOnRoad(road, position, directionVector, Intelligence.furthestPointRadius) :
 			nearestPoint;
 		if (targetPoint === null) {
@@ -154,22 +154,21 @@ export class Intelligence {
 		return best.point;
 	}
 
-
-
 	#controlSpeed(car: Car, cars: Car[], speedLimit: number) {
 		if (this.#headingTowardsOtherDrivers(car, cars)) {
 			console.log(`Car ${car.id} braking to avoid crash`)
 			return { accelerate: 0, brake: 10 };
 		}
 
-		if (Math.random() < 0.1) {
+		const p = Math.random();
+		if (p < 0.1) {
 			return { accelerate: 0, brake: 5 };
 		}
 
 		if (car.velocity > speedLimit) {
 			return { accelerate: 0, brake: .3 };
 		} else if (car.velocity < speedLimit) {
-			return { accelerate: .5, brake: 0 };
+			return { accelerate: 0.5, brake: 0 };
 		}
 		return { accelerate: 0, brake: 0 };
 	}

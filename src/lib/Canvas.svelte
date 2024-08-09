@@ -4,7 +4,7 @@
 	import { Road } from "./road";
 	import type { Vector } from "./vector";
 	import { init } from "./debug";
-    import { CANVAS_DIMENSIONS } from "./consts";
+	import { CANVAS_DIMENSIONS } from "./consts";
 
 	let environment: HTMLDivElement;
 	let canvas: HTMLCanvasElement;
@@ -16,9 +16,9 @@
 			throw new Error("Could not get 2d context");
 		}
 
-		const {handleMouseDown, handleMouseUp} = setupMouseHandler(ctx);
-		canvas.addEventListener('mousedown', handleMouseDown)
-		canvas.addEventListener('mouseup', handleMouseUp)
+		const { handleMouseDown, handleMouseUp } = setupMouseHandler(ctx);
+		canvas.addEventListener("mousedown", handleMouseDown);
+		canvas.addEventListener("mouseup", handleMouseUp);
 
 		createRoad(ctx, { x: 100, y: 100 }, { x: 550, y: 900 });
 		// createRoad(ctx, { x: 900, y: 550 }, { x: 200, y: 200 });
@@ -29,7 +29,7 @@
 			{ x: 500, y: 500 },
 			{ x: 100, y: 200 },
 		);
-		createRoad(ctx, {x: 1200, y: 500}, {x: 100, y: 600})
+		createRoad(ctx, { x: 1200, y: 500 }, { x: 100, y: 600 });
 
 		init(ctx, roads, drivers);
 
@@ -92,7 +92,7 @@
 		};
 
 		return { handleMouseDown, handleMouseUp };
-	};
+	}
 </script>
 
 <div id="environment" bind:this={environment}>

@@ -106,6 +106,7 @@ export class Car {
 			road: null,
 			distance: Infinity,
 		};
+
 		for (let i = 0; i < roads.length; i++) {
 			const distance = Math.min(this.distanceTo(roads[i].start), this.distanceTo(roads[i].end));
 			if (distance < nearest.distance) {
@@ -113,6 +114,7 @@ export class Car {
 				nearest.distance = distance;
 			}
 		}
+
 		return nearest.road;
 	}
 
