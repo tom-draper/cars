@@ -1,7 +1,7 @@
 import { addVectors, type Vector } from "./vector";
-import type { Road } from "./road";
+import type Road from "./road";
 
-export class Car {
+export default class Car {
 	static #distanceUnit = 1;
 	static #steerUnit = 1;
 	static #drag = 0.1;

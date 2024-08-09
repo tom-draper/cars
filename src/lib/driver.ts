@@ -1,10 +1,10 @@
-import { Car } from "./car";
-import { Intelligence } from "./intelligence";
+import Car from "./car";
+import Intelligence from "./intelligence";
 
-export class Driver {
+export default class Driver {
 	#car: Car = new Car();
 	#intelligence: Intelligence = new Intelligence();
-	#history: ActionHistory = new ActionHistory();
+	#memory: ActionHistory = new ActionHistory();
 	#ability: DriverAbility;
 	#state: DriverState;
 
@@ -44,17 +44,17 @@ export class Driver {
 
 	accelerate(amount: number) {
 		const accelerated = this.car.accelerate(amount);
-		this.#history.add(ActionType.Acceleration, accelerated);
+		this.#memory.add(ActionType.Acceleration, accelerated);
 	}
 
 	brake(amount: number) {
 		const decelerated = this.car.brake(amount);
-		this.#history.add(ActionType.Acceleration, -decelerated);
+		this.#memory.add(ActionType.Acceleration, -decelerated);
 	}
 
 	steer(amount: number) {
 		const changed = this.car.steer(amount);
-		this.#history.add(ActionType.Steering, changed);
+		this.#memory.add(ActionType.Steering, changed);
 	}
 
 	static default() {

@@ -1,7 +1,7 @@
-import type { Driver } from "./driver";
+import Driver from "./driver";
 import { addVectors, crossProduct, distanceSquared, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
-import type { Road } from "./road";
-import type { Car } from "./car";
+import Road from "./road";
+import Car from "./car";
 import { setColor, displayLine, displayPoint } from "./debug";
 import { bezierPoint } from "./bezier";
 
@@ -11,7 +11,7 @@ type Move = {
 	brake: number;
 }
 
-export class Intelligence {
+export default class Intelligence {
 	static stepSize: number = 0.02;
 	static furthestPointRadius: number = 35;
 	static targetRoadDistance: number = 20;

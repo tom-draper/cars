@@ -1,7 +1,7 @@
 import { bezierPoint } from "./bezier";
 import { addVectors, multiplyVectorByScalar, subtractVectors, type Vector } from "./vector";
 
-export class Road {
+export default class Road {
 	static #nextCarID = 0;
 
 	#id: number = Road.#nextID();

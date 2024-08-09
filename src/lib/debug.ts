@@ -1,6 +1,6 @@
 import { CANVAS_DIMENSIONS } from "./consts";
-import type { Driver } from "./driver";
-import type { Road } from "./road";
+import Driver from "./driver";
+import Road from "./road";
 import type { Vector } from "./vector";
 
 let ctx: CanvasRenderingContext2D;

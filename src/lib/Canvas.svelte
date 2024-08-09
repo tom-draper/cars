@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { Driver } from "./driver";
-	import { Road } from "./road";
+	import Driver from "./driver";
+	import Road from "./road";
 	import type { Vector } from "./vector";
 	import { init } from "./debug";
 	import { CANVAS_DIMENSIONS } from "./consts";
