@@ -1,10 +1,10 @@
-import Driver, { ActionType, type ActionHistoryEpoch } from "./driver";
+import Driver from "./driver"
+import { ActionType, type ActionHistoryEpoch } from "./actions";
 import { addVectors, crossProduct, distanceSquared, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
 import Road from "./road";
 import Car from "./car";
 import { setColor, displayLine, displayPoint } from "./debug";
 import { bezierPoint } from "./bezier";
-import type { Action } from "svelte/action";
 
 type Move = {
 	steer: number;

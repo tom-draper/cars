@@ -1,16 +1,14 @@
 import { bezierPoint } from "./bezier";
 import { addVectors, multiplyVectorByScalar, subtractVectors, type Vector } from "./vector";
 
-export default class Road {
-	static #nextCarID = 0;
-
-	#id: number = Road.#nextID();
+export default class Road extends Identifiable {
 	#start: Vector;
 	#end: Vector;
 	#control1: Vector | null;
 	#control2: Vector | null;
 
 	constructor(start: Vector, end: Vector, control1: Vector | null = null, control2: Vector | null = null) {
+		super();
 		this.#start = start;
 		this.#end = end;
 		this.#control1 = control1;
@@ -37,10 +35,6 @@ export default class Road {
 		}
 	}
 
-	get id() {
-		return this.#id;
-	}
-
 	get start() {
 		return this.#start;
 	}
@@ -59,9 +53,5 @@ export default class Road {
 
 	isBezier(): this is { control1: Vector; control2: Vector } {
 		return this.#control1 !== null && this.#control2 !== null;
-	}
-
-	static #nextID() {
-		return Road.#nextCarID++;
 	}
 }

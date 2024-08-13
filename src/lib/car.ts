@@ -2,14 +2,12 @@ import { addVectors, distanceSquared, type Vector } from "./vector";
 import type Road from "./road";
 import Intelligence from "./intelligence";
 
-export default class Car {
+export default class Car extends Identifiable {
 	static #distanceUnit = 1;
 	static #steerUnit = 1;
 	static #drag = 0.1;
-	static #nextCarID = 0;
 	static #colors = ["white", "black", "gray", "silver", "brown", "orange", "beige", "gold", "red", "blue", "green", "yellow", "purple"];
 
-	#id: number = Car.#nextID();
 	#color: string = Car.randomColor();
 	#velocity = 0;
 	#direction = 0;
@@ -19,11 +17,8 @@ export default class Car {
 	#element: HTMLDivElement | null = null;
 
 	constructor(performance: CarPerformance = CarPerformance.default()) {
+		super();
 		this.#performance = performance;
-	}
-
-	get id() {
-		return this.#id;
 	}
 
 	get velocity() {
@@ -52,7 +47,7 @@ export default class Car {
 
 	attach(element: HTMLDivElement) {
 		if (element instanceof HTMLDivElement) {
-			element.id = `car-${this.#id}`;
+			element.id = `car-${this.id}`;
 			element.style.background = this.#color;
 			element.classList.add("car");
 			this.#element = element;
@@ -131,10 +126,6 @@ export default class Car {
 		const dx = this.#position.x - position.x;
 		const dy = this.#position.y - position.y;
 		return Math.sqrt(dx * dx + dy * dy);
-	}
-
-	static #nextID() {
-		return Car.#nextCarID++;
 	}
 
 	static randomColor() {
