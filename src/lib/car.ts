@@ -1,5 +1,6 @@
-import { addVectors, type Vector } from "./vector";
+import { addVectors, distanceSquared, type Vector } from "./vector";
 import type Road from "./road";
+import Intelligence from "./intelligence";
 
 export default class Car {
 	static #distanceUnit = 1;
@@ -102,20 +103,21 @@ export default class Car {
 	}
 
 	#nearestRoad(roads: Road[]) {
-		const nearest: { road: Road | null, distance: number } = {
+		const best: { road: Road | null, distance: number } = {
 			road: null,
 			distance: Infinity,
 		};
-
-		for (let i = 0; i < roads.length; i++) {
-			const distance = Math.min(this.distanceTo(roads[i].start), this.distanceTo(roads[i].end));
-			if (distance < nearest.distance) {
-				nearest.road = roads[i];
-				nearest.distance = distance;
+		for (const road of roads) {
+			for (let t = 0; t <= 1; t += Intelligence.stepSize) {
+				const pointOnRoad = road.pointOnRoad(t);
+				const distance = distanceSquared(pointOnRoad, this.#position);
+				if (distance < best.distance) {
+					best.road = road;
+					best.distance = distance;
+				}
 			}
 		}
-
-		return nearest.road;
+		return best.road;
 	}
 
 	#updateCarElement() {

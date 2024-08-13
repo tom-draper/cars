@@ -43,18 +43,18 @@ export default class Driver {
 	// }
 
 	accelerate(amount: number) {
-		const accelerated = this.car.accelerate(amount);
-		this.#memory.add(ActionType.Acceleration, accelerated);
+		const changed = this.car.accelerate(amount);
+		this.#memory.add(ActionType.Acceleration, amount, changed);
 	}
 
 	brake(amount: number) {
-		const decelerated = this.car.brake(amount);
-		this.#memory.add(ActionType.Acceleration, -decelerated);
+		const changed = this.car.brake(amount);
+		this.#memory.add(ActionType.Acceleration, -amount, -changed);
 	}
 
 	steer(amount: number) {
 		const changed = this.car.steer(amount);
-		this.#memory.add(ActionType.Steering, changed);
+		this.#memory.add(ActionType.Steering, amount, changed);
 	}
 
 	static default() {
@@ -100,6 +100,7 @@ enum ActionType {
 type ActionHistoryEpoch = {
 	type: ActionType;
 	value: number;
+	result: number;
 }
 
 export class ActionHistory {
@@ -114,12 +115,18 @@ export class ActionHistory {
 		this.#history = new Array(size);
 	}
 
-	add(type: ActionType, value: number) {
-		this.#history[this.#index] = { type, value };
+	add(type: ActionType, value: number, result: number) {
+		this.#history[this.#index] = { type, value, result };
 		this.#increment();
 	}
 
 	#increment() {
 		this.#index = (this.#index + 1) % this.#history.length;
 	}
+
+	getLastAction(n: number = 1): ActionHistoryEpoch | undefined {
+		const size = this.#history.length;
+        const lastIndex = (this.#index - n + size) % size;
+        return this.#history[lastIndex];
+    }
 }
