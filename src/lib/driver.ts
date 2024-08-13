@@ -17,6 +17,10 @@ export default class Driver {
 		return this.#car;
 	}
 
+	get memory() {
+		return this.#memory;
+	}
+
 	nextMove(drivers: Driver[]) {
 		const { steer, accelerate, brake } = this.#intelligence.nextMove(this, drivers);
 		this.car.steer(steer);
@@ -92,12 +96,12 @@ export class DriverState {
 	}
 }
 
-enum ActionType {
+export enum ActionType {
 	Acceleration,
 	Steering
 }
 
-type ActionHistoryEpoch = {
+export type ActionHistoryEpoch = {
 	type: ActionType;
 	value: number;
 	result: number;
@@ -113,6 +117,10 @@ export class ActionHistory {
 		}
 
 		this.#history = new Array(size);
+	}
+
+	get size() {
+		return this.#history.length;
 	}
 
 	add(type: ActionType, value: number, result: number) {

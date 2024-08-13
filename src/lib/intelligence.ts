@@ -1,9 +1,10 @@
-import Driver from "./driver";
+import Driver, { ActionType, type ActionHistoryEpoch } from "./driver";
 import { addVectors, crossProduct, distanceSquared, dotProduct, magnitude, multiplyVectorByScalar, normalize, subtractVectors, type Vector } from "./vector";
 import Road from "./road";
 import Car from "./car";
 import { setColor, displayLine, displayPoint } from "./debug";
 import { bezierPoint } from "./bezier";
+import type { Action } from "svelte/action";
 
 type Move = {
 	steer: number;
@@ -33,8 +34,7 @@ export default class Intelligence {
 		// } else {
 		//     console.log('No steering');
 		// }
-		const cars = drivers.map(d => d.car);
-		const { accelerate, brake } = this.#controlSpeed(driver.car, cars, 0.3);
+		const { accelerate, brake } = this.#controlSpeed(driver, drivers, 0.3);
 		const move: Move = { steer, accelerate, brake }
 		return move;
 	}
@@ -154,37 +154,128 @@ export default class Intelligence {
 		return best.point;
 	}
 
-	#controlSpeed(car: Car, cars: Car[], speedLimit: number) {
-		if (this.#headingTowardsOtherDrivers(car, cars)) {
-			console.log(`Car ${car.id} braking to avoid crash`)
+	#controlSpeed(driver: Driver, drivers: Driver[], speedLimit: number) {
+		if (this.#driverStuck(driver)) {
+			console.log(`Car ${driver.car.id} is stuck, attempting to reverse`);
+			// Check for any cars immediately behind us before reversing...
+			if (this.#headingTowardsOtherDrivers(driver, drivers, true)) {
+				console.log(`Car ${driver.car.id} is stuck, unable to reverse`);
+				return { accelerate: 0, brake: 0 }; // Forced to wait for other cars to move
+			}
+			return { accelerate: -0.2, brake: 0 };
+		}
+		
+		// Check for braking to avoid crash...
+		const reversing = driver.car.velocity < 0;
+		if (this.#headingTowardsOtherDrivers(driver, drivers, reversing)) {
+			console.log(`Car ${driver.car.id} braking to avoid crash`);
 			return { accelerate: 0, brake: 10 };
 		}
 
+		// Random braking...
 		const p = Math.random();
 		if (p < 0.1) {
 			return { accelerate: 0, brake: 5 };
 		}
 
-		if (car.velocity > speedLimit) {
+		if (driver.car.velocity > speedLimit) {
 			return { accelerate: 0, brake: .3 };
-		} else if (car.velocity < speedLimit) {
+		} else if (driver.car.velocity < speedLimit) {
 			return { accelerate: 0.5, brake: 0 };
 		}
 		return { accelerate: 0, brake: 0 };
 	}
 
-	#headingTowardsOtherDrivers(car: Car, cars: Car[]) {
+	#headingTowardsOtherDrivers(driver: Driver, drivers: Driver[], reversing: boolean = false) {
+		const car = driver.car;
+		const cars = drivers.map(d => d.car);
+
 		const { position, directionVector } = car;
+
 		for (const otherCar of cars) {
 			if (otherCar.id === car.id) {
-				continue;
+				continue; // Skip if the same car
 			}
 			const vectorToDriver = subtractVectors(otherCar.position, position);
 			const distance = magnitude(vectorToDriver);
-			if (distance < 20 && dotProduct(directionVector, vectorToDriver) > 0) {
+			const dp = dotProduct(directionVector, vectorToDriver);
+			const inDrivingDirection = reversing ? dp > 0 : dp;
+			if (distance < 20 && inDrivingDirection) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	#driverStuck(driver: Driver) {
+		return driver.car.velocity === 0 && (this.#failingToAccelerate(driver) || this.#continuouslyBraking(driver) || this.#idelling(driver));
+	}
+
+	#failingToAccelerate(driver: Driver) {
+		let failedAccelerations = 0;
+		const maxFailedAccelerations = 5;
+		for (let i = 0; i < driver.memory.size; i++) {
+			const action = driver.memory.getLastAction(i);
+			if (action === undefined) {
+				continue;
+			}
+
+			// Successful acceleration found
+			if (this.#successfulAcceleration(action)) {
+				return false;
+			}
+
+			// Record failed acceleration
+			if (this.#failedAcceleration(action)) {
+				failedAccelerations++;
+			}
+
+			// Driver is stuck if their last 5 attempts to accelerate failed
+			if (failedAccelerations > maxFailedAccelerations) {
+				console.log(`Car ${driver.car.id} is failing to accelerate`);
+				return true;
+			}
+		}
+		return false;
+	}
+
+	#failedAcceleration(action: ActionHistoryEpoch) {
+		return action.type === ActionType.Acceleration && action.value > 0 && action.result === 0;
+	}
+	
+	#successfulAcceleration(action: ActionHistoryEpoch) {
+		return action.type === ActionType.Acceleration && action.value > 0 && action.result > 0;
+	}
+
+	#continuouslyBraking(driver: Driver) {
+		for (let i = 0; i < driver.memory.size; i++) {
+			const action = driver.memory.getLastAction(i);
+			if (action === undefined || !this.#brakingAction(action)) {
+				return false;
+			}
+		}
+
+		console.log(`Car ${driver.car.id} is continuously braking`);
+		return true;
+	}
+
+	#brakingAction(action: ActionHistoryEpoch) {
+		return action.type === ActionType.Acceleration && action.value < 0;
+	}
+
+	#idelling(driver: Driver) {
+		for (let i = 0; i < driver.memory.size; i++) {
+			const action = driver.memory.getLastAction(i);
+			if (action === undefined || !this.#idleAction(action)) {
+				return false;
+			}
+		}
+
+		console.log(`Car ${driver.car.id} is idling`);
+		return true;
+	}
+
+	#idleAction(action: ActionHistoryEpoch) {
+		return action.value === 0;
 	}
 }
