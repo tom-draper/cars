@@ -39,7 +39,7 @@ export function displayLine(start: Vector, end: Vector) {
 	}
 
 	if (lineCount > 0 && lineCount % drivers.length === 0) {
-		clearCanvas();
+		// clearCanvas();
 	}
 	ctx.strokeStyle = color;
 	ctx.beginPath();

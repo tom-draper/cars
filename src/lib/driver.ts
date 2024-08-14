@@ -24,9 +24,9 @@ export default class Driver {
 
 	nextMove(drivers: Driver[]) {
 		const { steer, accelerate, brake } = this.#intelligence.nextMove(this, drivers);
-		this.car.steer(steer);
-		this.car.accelerate(accelerate);
-		this.car.brake(brake);
+		this.steer(steer);
+		this.accelerate(accelerate);
+		this.brake(brake);
 		this.car.update();
 	}
 

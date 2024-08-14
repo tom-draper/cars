@@ -199,7 +199,7 @@ export default class Intelligence {
 			const vectorToDriver = subtractVectors(otherCar.position, position);
 			const distance = magnitude(vectorToDriver);
 			const dp = dotProduct(directionVector, vectorToDriver);
-			const inDrivingDirection = reversing ? dp > 0 : dp;
+			const inDrivingDirection = reversing ? dp < 0 : dp > 0;
 			if (distance < 20 && inDrivingDirection) {
 				return true;
 			}

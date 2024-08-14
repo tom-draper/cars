@@ -1,6 +1,7 @@
 import { addVectors, distanceSquared, type Vector } from "./vector";
 import type Road from "./road";
 import Intelligence from "./intelligence";
+import Identifiable from "./identify";
 
 export default class Car extends Identifiable {
 	static #distanceUnit = 1;

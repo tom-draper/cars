@@ -1,4 +1,5 @@
 import { bezierPoint } from "./bezier";
+import Identifiable from "./identify";
 import { addVectors, multiplyVectorByScalar, subtractVectors, type Vector } from "./vector";
 
 export default class Road extends Identifiable {

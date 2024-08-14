@@ -1,4 +1,4 @@
-class Identifiable {
+export default class Identifiable {
     static #nextIds = new Map();
 
     #id: number;

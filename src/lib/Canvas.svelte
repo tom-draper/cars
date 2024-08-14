@@ -37,7 +37,7 @@
 			createDriver();
 			setTimeout(() => {
 				createDriver();
-			}, 100);
+			}, 1000);
 		}
 	});
 
