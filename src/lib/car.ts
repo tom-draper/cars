@@ -46,6 +46,10 @@ export default class Car extends Identifiable {
 		this.#road = road;
 	}
 
+	set performance(performance: CarPerformance) {
+		this.#performance = performance;
+	}
+
 	attach(element: HTMLDivElement) {
 		if (element instanceof HTMLDivElement) {
 			element.id = `car-${this.id}`;
