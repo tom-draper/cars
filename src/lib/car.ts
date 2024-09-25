@@ -6,9 +6,8 @@ import Identifiable from "./identify";
 export default class Car extends Identifiable {
 	static #distanceUnit = 1;
 	static #steerUnit = 1;
-	static #drag = 0.1;
 	static #colors = ["white", "black", "gray", "silver", "brown", "orange", "beige", "gold", "red", "blue", "green", "yellow", "purple"];
-
+	
 	#color: string = Car.randomColor();
 	#velocity = 0;
 	#direction = 0;
@@ -16,6 +15,9 @@ export default class Car extends Identifiable {
 	#road: Road | null = null;
 	#performance: CarPerformance;
 	#element: HTMLDivElement | null = null;
+	#mass = 1000;
+	#dragCoefficient = 0.1;
+	#engineBraking = 0.1;
 
 	constructor(performance: CarPerformance = CarPerformance.default()) {
 		super();
@@ -59,24 +61,35 @@ export default class Car extends Identifiable {
 		}
 	}
 
-	accelerate(amount: number): number {
-		const increment = amount * this.#performance.acceleration * Car.#distanceUnit;
-		this.#velocity += increment;
-		return increment;
+	accelerate(amount: number) {
+		const change = amount * this.#performance.acceleration * Car.#distanceUnit;
+		this.#velocity += change;
+		return change;
 	}
 
-	brake(amount: number): number {
+	brake(amount: number) {
 		if (this.#velocity <= 0) {
 			return 0;
 		}
 
 		// Limit the maximum decrement to avoid velocity below 0
-		const decrement = Math.min(amount * this.#performance.braking * Car.#distanceUnit, this.#velocity);
-		this.#velocity -= decrement;
-		return decrement;
+		const change = this.#brakingChange(amount);
+		this.#velocity -= change;
+		return change;
 	}
 
-	steer(amount: number): number {
+	#brakingChange(amount: number) {
+		let change = amount * this.#performance.braking * Car.#distanceUnit;
+		// Limit braking if velocity hits zero...
+		change = Math.min(change, Math.abs(this.#velocity));
+		// If reversing, ensure we bring velocity closer to zero...
+		if (this.#velocity < 0) {
+			change *= -1;
+		}
+		return change;
+	}
+
+	steer(amount: number) {
 		const change = amount * Car.#steerUnit;
 		this.#direction += change;
 		return change;
@@ -84,12 +97,24 @@ export default class Car extends Identifiable {
 
 	update() {
 		// Apply drag to slow down the car
-		this.#velocity -= Math.min(Car.#drag, this.#velocity);
+		this.#velocity -= Math.min(this.#dragDeceleration, this.#velocity);
 
 		// Calculate new position based on current velocity and direction
 		const movement = this.#translationVector();
 		this.#position = addVectors(this.#position, movement);
 		this.#updateCarElement();
+	}
+
+	get #dragDeceleration() {
+		return this.#drag / this.#mass;
+	}
+
+	get #drag() {
+		return this.#airResistance + this.#engineBraking;
+	}
+
+	get #airResistance() {
+		return this.#dragCoefficient * Math.pow(this.#velocity, 2);
 	}
 
 	setRoad(roads: Road[]) {
