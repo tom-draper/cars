@@ -1,4 +1,4 @@
-import { CANVAS_DIMENSIONS } from "./consts";
+import { dimensions } from "./consts";
 import Driver from "./driver";
 import Road from "./road";
 import type { Vector } from "./vector";
@@ -51,7 +51,7 @@ export function displayLine(start: Vector, end: Vector) {
 }
 
 function clearCanvas() {
-	ctx.clearRect(0, 0, CANVAS_DIMENSIONS.x, CANVAS_DIMENSIONS.y);
+	ctx.clearRect(0, 0, dimensions.x, dimensions.y);
 	redrawRoads();
 	lineCount = 0;
 	pointCount = 0;
